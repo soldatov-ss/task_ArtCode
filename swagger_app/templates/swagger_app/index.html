@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form method="GET">
+    {% csrf_token %}
+    <select name="terms" id="termsList">
+        <option disabled selected >select term</option>
+        {% for term in terms %}
+        <option value="{{ term.slug }}" {% if current_term == term.slug %} selected {% endif %}>{{ term.label }}</option>
+        {% endfor %}
+    </select>
+    <select name="brands" id="brandsList" required>
+        <option disabled selected >select brand</option>
+        {% for brand in brand_terms %}
+            <option value="{{ brand.slug }}" {% if current_brand == brand.slug %} selected {% endif %}>{{ brand.label }}</option>
+        {% endfor %}
+    </select>
+    <select name="styles" id="stylesList">
+        <option disabled selected >select style</option>
+        {% for style in styles %}
+<!--            <option  value="{{ style.slug }}" {% if current_style == style.slug %} selected {% endif %}>{{ style.label }}</option>-->
+            <option value="{{ style }}" {% if current_style == style %} selected {% endif %}>{{ style }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form'),
+            termsBtn = document.querySelector('#termsList'),
+            styleBtn = document.querySelector('#stylesList'),
+            brandBtn = document.querySelector('#brandsList');
+
+
+        form.addEventListener('change', (e) => {
+
+            if (e.target === termsBtn) {
+                sessionStorage.setItem('terms', e.target.value);
+                sessionStorage.removeItem('style');
+                sessionStorage.removeItem('brand');
+
+            } else if (e.target === brandBtn) {
+                sessionStorage.setItem('brand', e.target.value);
+                sessionStorage.removeItem('style');
+            } else if (e.target === styleBtn) {
+                sessionStorage.setItem('style', e.target.value);
+            }
+
+            let curTerm = (sessionStorage.getItem('terms')) ? `/s-${sessionStorage.getItem('terms')}` : '',
+                curBrand = (sessionStorage.getItem('brand')) ? `/b-${sessionStorage.getItem('brand')}` : '',
+                curStyle = (sessionStorage.getItem('style')) ? `/st-${sessionStorage.getItem('style')}` : '';
+
+            window.location.href = `http://127.0.0.1:8000${curTerm}${curBrand}${curStyle}`;
+        })
+    });
+</script>
+</body>
+</html>
