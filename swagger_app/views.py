@@ -1,11 +1,15 @@
 import asyncio
+import json
 
 import aiohttp
 from django.shortcuts import render
 
 
-async def get_response(session, url):
+async def get_response(session, url, params=None) -> json:
     headers = {'Accept-Language': 'ua'}
+    if params:
+        async with session.get(url, params=params) as res:
+            return await res.json()
     async with session.get(url, headers=headers) as res:
         return await res.json()
 
@@ -15,10 +19,9 @@ async def index(request, *args, **kwargs):
     response_data = []
 
     urls = [
-        'https://autobooking.com/api/test/v1/search/terms',
-        'https://autobooking.com/api/test/v1/search/brands_terms',
-
-        # 'https://autobooking.com/api/test/v1/search/styles'
+        'https://onboarding.art-code.team/api/test/v1/search/terms',
+        'https://onboarding.art-code.team/api/test/v1/search/brands_terms',
+        'https://onboarding.art-code.team/api/test/v1/search/styles'
     ]
 
     async with aiohttp.ClientSession() as session:
@@ -28,16 +31,19 @@ async def index(request, *args, **kwargs):
         for res in await asyncio.gather(*futures):
             response_data.append(res)
 
-    # terms, brand_terms, styles = response_data
-    terms, brand_terms = response_data
-
-    styles = ['something1', 'something2', 'something3', 'something4', 'something5', ]
-
-    # context = {'terms': terms.get('data'), 'brand_terms': brand_terms.get('data'), 'styles': styles.get('data')}
-    context = {'terms': terms.get('data'), 'brand_terms': brand_terms.get('data'), 'styles': styles}
+    terms, brand_terms, styles = response_data
+    context = {'terms': terms.get('data'), 'brand_terms': brand_terms.get('data'), 'styles': styles.get('data')}
 
     if kwargs:
         context['current_term'] = kwargs.get('service_slug')
         context['current_brand'] = kwargs.get('brand_slug')
         context['current_style'] = kwargs.get('style_slug')
+
+        if len(kwargs) == 3:
+            parse_url = 'https://onboarding.art-code.team/api/test/v1/search/parse_link'
+            async with aiohttp.ClientSession() as session:
+                parse_list = await get_response(session, parse_url, params=kwargs)
+
+            context['parse_list'] = [parse_list]
+
     return render(request, 'swagger_app/index.html', context)

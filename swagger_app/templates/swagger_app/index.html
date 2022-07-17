@@ -22,12 +22,18 @@
     <select name="styles" id="stylesList">
         <option disabled selected >select style</option>
         {% for style in styles %}
-<!--            <option  value="{{ style.slug }}" {% if current_style == style.slug %} selected {% endif %}>{{ style.label }}</option>-->
-            <option value="{{ style }}" {% if current_style == style %} selected {% endif %}>{{ style }}</option>
+            <option  value="{{ style.slug }}" {% if current_style == style.slug %} selected {% endif %}>{{ style.label }}</option>
         {% endfor %}
     </select>
 </form>
 
+<div style="margin-top:20px">
+    <select name="parse-list" id="parseList">
+        {% for item in parse_list %}
+            <option value="">{{item}}</option>
+        {% endfor %}
+    </select>
+</div>
 <script>
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -45,9 +51,17 @@
                 sessionStorage.removeItem('brand');
 
             } else if (e.target === brandBtn) {
+                if (!window.location.href.match('/s-')) {
+                    sessionStorage.clear();
+                }
                 sessionStorage.setItem('brand', e.target.value);
                 sessionStorage.removeItem('style');
+
+
             } else if (e.target === styleBtn) {
+                if (!window.location.href.match('/b-')) {
+                    sessionStorage.clear();
+                }
                 sessionStorage.setItem('style', e.target.value);
             }
 
